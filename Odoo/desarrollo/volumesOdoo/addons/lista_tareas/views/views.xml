@@ -1,30 +1,39 @@
 <odoo>
   <data>
+    
     <record model="ir.ui.view" id="lista_tareas.list">
       <field name="name">lista_tareas.view.list</field>
       <field name="model">lista_tareas.lista_tareas</field>
       <field name="arch" type="xml">
-        <tree>
+        <tree decoration-danger="retrasada == True" decoration-muted="realizada == True">
           <field name="tarea" />
           <field name="prioridad" />
           <field name="urgente" />
+          <field name="fecha_limite" />
+          <field name="retrasada" />
           <field name="realizada" />
           <field name="asignado_a" />
         </tree>
       </field>
     </record>
+
     <record id="lista_tareas_view_form" model="ir.ui.view">
       <field name="name">lista_tareas.view.form</field>
       <field name="model">lista_tareas.lista_tareas</field>
       <field name="arch" type="xml">
-        <form string="">
+        <form string="Formulario de Tarea">
           <sheet>
             <group>
               <field name="tarea" />
+              <field name="fecha_creacion" readonly="1"/>
             </group>
             <group>
               <field name="prioridad" />
               <field name="urgente" />
+            </group>
+            <group>
+              <field name="fecha_limite" />
+              <field name="retrasada" />
             </group>
             <group>
               <field name="realizada" />
@@ -34,14 +43,48 @@
         </form>
       </field>
     </record>
+
+    <record id="lista_tareas_view_calendar" model="ir.ui.view">
+        <field name="name">lista_tareas.view.calendar</field>
+        <field name="model">lista_tareas.lista_tareas</field>
+        <field name="arch" type="xml">
+            <calendar string="Calendario de Tareas" 
+                      date_start="fecha_limite" 
+                      color="asignado_a" 
+                      mode="month">
+                <field name="tarea"/>
+                <field name="asignado_a"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record id="lista_tareas_view_search" model="ir.ui.view">
+        <field name="name">lista_tareas.view.search</field>
+        <field name="model">lista_tareas.lista_tareas</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Tareas">
+                <field name="tarea" />
+                <field name="asignado_a" />
+                
+                <filter name="filter_no_realizada" string="Pendientes" domain="[('realizada', '=', False)]"/>
+                <filter name="filter_realizada" string="Realizadas" domain="[('realizada', '=', True)]"/>
+                <filter name="filter_retrasada" string="Retrasadas" domain="[('retrasada', '=', True)]"/>
+                
+                <group expand="0" string="Agrupar por">
+                    <filter string="Usuario Asignado" name="group_by_user" context="{'group_by': 'asignado_a'}"/>
+                    <filter string="Estado" name="group_by_realizada" context="{'group_by': 'realizada'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
     <record id="lista_tareas_view_graph" model="ir.ui.view">
       <field name="name">lista_tareas.view.graph</field>
       <field name="model">lista_tareas.lista_tareas</field>
       <field name="arch" type="xml">
         <graph string="Tareas asignadas" type="bar">
-          <field name="id" type="measure" />
-          <field name="realizada" type="col" />
           <field name="asignado_a" type="row" />
+          <field name="realizada" type="col" />
         </graph>
       </field>
     </record>
@@ -49,18 +92,12 @@
     <record model="ir.actions.act_window" id="lista_tareas.action_window">
       <field name="name">Listado de tareas pendientes</field>
       <field name="res_model">lista_tareas.lista_tareas</field>
-      <field name="view_mode">tree,form,graph</field>
-    </record>
+      <field name="view_mode">tree,form,graph,calendar</field>
+      <field name="context">{'search_default_filter_no_realizada': 1}</field> </record>
 
-    <!-- Top menu item -->
     <menuitem name="Listado de tareas" id="lista_tareas.menu_root" />
-
-    <!-- menu categories -->
     <menuitem name="Opciones Lista Tareas" id="lista_tareas.menu_1" parent="lista_tareas.menu_root" />
-
-    <!-- actions -->
-    <menuitem name="Mostrar lista" id="lista_tareas.menu_1_list" parent="lista_tareas.menu_1"
-      action="lista_tareas.action_window" />
+    <menuitem name="Mostrar lista" id="lista_tareas.menu_1_list" parent="lista_tareas.menu_1" action="lista_tareas.action_window" />
 
   </data>
 </odoo>
